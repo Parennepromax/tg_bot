@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.TOKEN) #передаём боту
 dp = Dispatcher(bot)
 
-db = dbase('db.db')
+db = dbase('db.db') #подключаемся к бд через init
 
 
 @dp.message_handler(commands=['start']) #первая команда при работе с ботом
@@ -47,9 +47,9 @@ async def unsubscribe(message: types.Message):
 
 @dp.message_handler(commands=['weather']) #если задействована команда узнать погоду
 async def get_weather(message: types.Message):
-    city = message.text.split()[-1]
-    weather_smile = { #создаём смайлики
-        "Clear": "Ясно \U00002600",
+    city = message.text.split()[-1] #так как команда у нас состоит из двух слов, нам надо вытащить город
+    weather_smile = { #Находим подходящий смайлик, смотрим его номер в Юникоде и создаём словарь
+        "Clear": "Ясно \U00002600", #ключ мы вытащили со страницы, а значение будем использовать при выводе информации
         "Clouds": "Облачно \U00002601",
         "Rain": "Дождь \U00002614",
         "Drizzle": "Дождь \U00002614",
@@ -60,39 +60,39 @@ async def get_weather(message: types.Message):
     }
 
     try:
-        r = requests.get(
+        r = requests.get( #делаем запрос на сайт, подставляем интересующий нас город и токен с акаунта
             f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={config.WEATHER_TOKEN}&units=metric"
         )
-        data = r.json()
+        data = r.json() #записываем данные в файл
 
-        town = data["name"]
-        cur_weather = data["main"]["temp"]
+        town = data["name"] #вытаскиваем по ключу название города
+        cur_weather = data["main"]["temp"] #записываем температуру
 
-        weather_description = data["weather"][0]["main"]
-        if weather_description in weather_smile:
-            wd = weather_smile[weather_description]
+        weather_description = data["weather"][0]["main"] #записываем описание погоды
+        if weather_description in weather_smile: #проверяем, есть ли данное описние погоды у нас в словаре
+            wd = weather_smile[weather_description] #записываем перевод и изображение
         else:
             wd = "Look at window \U000026A0" #я брал не все типы погоды с сайта, поэтому некоторые надо будет обрабатывать так
+                                             #например, отсутствует торнадо и песчаная буря
+        humidity = data["main"]["humidity"] #записываем влажность воздуха
+        pressure = data["main"]["pressure"] #записываем давление
+        wind = data["wind"]["speed"] #записываем скорость ветра
+        sunrise_timestamp = datetime.datetime.fromtimestamp(data["sys"]["sunrise"]) #записываем время восхода солнца
+        sunset_timestamp = datetime.datetime.fromtimestamp(data["sys"]["sunset"]) #записываем время захода солнца
 
-        humidity = data["main"]["humidity"]
-        pressure = data["main"]["pressure"]
-        wind = data["wind"]["speed"]
-        sunrise_timestamp = datetime.datetime.fromtimestamp(data["sys"]["sunrise"])
-        sunset_timestamp = datetime.datetime.fromtimestamp(data["sys"]["sunset"])
-
-        await message.answer(f"***{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}***\n"
+        await message.answer(f"***{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}***\n" #сформировали вывод
                              f"Погода в городе: {town}\nТемпература: {cur_weather}C°\n{wd}\n"
                              f"Влажность: {humidity}%\nВетер: {wind} м/с\nДавление: {pressure} мм.рт.ст\n"
                              f"Восход солнца: {sunrise_timestamp}\nЗакат солнца: {sunset_timestamp}"
                              )
     except Exception:
-        await message.reply("Я не знаю такого города...\n Попробуйте ввести заново.")
+        await message.reply("Я не знаю такого города...\n Попробуйте ввести заново.") #обработка ошибок, скорее всего появятся, если не так ввести название города
 
 
 @dp.message_handler(commands=['help']) #если задействована команда вызова помощи
-@dp.message_handler(lambda message: message.text and 'Узнать команды ⤵️' in message.text) #если ко
+@dp.message_handler(lambda message: message.text and 'Узнать команды ⤵️' in message.text) #если команда вызвана через кнопку
 async def help(message: types.Message):
-    with open('data/allCommands.txt', 'r', encoding="utf-8") as f:
+    with open('data/allCommands.txt', 'r', encoding="utf-8") as f: #считываем информацию из файла, utf-8 чтобы читался русский язык
         text = f.read()
     await message.answer('All commands:\n' + text, reply_markup=kb.mainMark)
 
@@ -140,7 +140,7 @@ async def work(message: types.Message):
         await message.answer("Введите команду /weather <city> \n***\n"
                              "Город указать на английском языке", reply_markup=kb.mainMark)
     elif message.text == "Случайное число 🎲":
-        await message.answer(str(random.randint(0, 100)), reply_markup=kb.mainMark)
+        await message.answer(str(random.randint(0, 100)), reply_markup=kb.mainMark) #выводим случайное число с 0 до 100
     elif message.text == "Случайное животное 👻":
         animals = { #сделаем словарь, в качестве ключа сделали число, чтобы было легко потом вызвать функцию random
             1: "data/cat1.jpg",
@@ -149,10 +149,11 @@ async def work(message: types.Message):
             4: "data/parrot1.jpg",
             5: "data/giraffe1.jpg"
         }
-        with open(f'{animals[random.randint(1, 5)]}', 'rb') as photo:
+        with open(f'{animals[random.randint(1, 5)]}', 'rb') as photo: #открываем 1 из 5 файлов на бинарное считывание
             await message.answer_photo(photo, caption='Random animal is ready', reply_markup=kb.mainMark)
     else:
         await message.reply("Не понимаю, что вы хотите сделать.\n Попробуйте выбрать интересующую кнопку.")
+        #если полученный текст никуда не подошёл
 
 
 if __name__ == '__main__':

@@ -1,2 +1,2 @@
-TOKEN = "tg_token"
-WEATHER_TOKEN = "w_token"
+TOKEN = "tg_token" #token бота
+WEATHER_TOKEN = "w_token" #token с сайта погоды
