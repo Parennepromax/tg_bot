@@ -48,7 +48,7 @@ async def unsubscribe(message: types.Message):
 @dp.message_handler(commands=['weather']) #если задействована команда узнать погоду
 async def get_weather(message: types.Message):
     city = message.text.split()[-1]
-    weather_smile = {
+    weather_smile = { #создаём смайлики
         "Clear": "Ясно \U00002600",
         "Clouds": "Облачно \U00002601",
         "Rain": "Дождь \U00002614",
