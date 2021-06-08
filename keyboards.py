@@ -1,9 +1,11 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-# Одна кнопка
+# Кнопки в проекте
+# KeyboardButton - создаёт кнопку
+# ReplyKeyboardMarkup - размещает кнопки в окне в соответствии с методами
 btn_Hello = KeyboardButton("Привет 👋")
 btn_Weather = KeyboardButton("Узнать погоду 🌤")
-btn_Help = KeyboardButton("Узнать комманды ⤵️")
+btn_Help = KeyboardButton("Узнать команды ⤵️")
 btn_RandNum = KeyboardButton("Случайное число 🎲")
 btn_RandAnim = KeyboardButton("Случайное животное 👻")
 btn_Cat = KeyboardButton("Кошка")
